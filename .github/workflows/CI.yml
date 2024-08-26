@@ -1,0 +1,55 @@
+name: .NET 8 CI/CD
+
+on:
+  push:
+    
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.x
+
+      - name: Restore dependencies
+        run: dotnet restore ./Interview/Interview.csproj
+
+      - name: Build the solution
+        run: dotnet build ./Interview/Interview.csproj --no-restore --configuration Release
+
+     
+      - name: "Restore/Build/Test"
+        run: dotnet test ./Interview.Test/Interview.Test.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
+            
+
+      - name: Combine Coverage Reports 
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.4
+        with:
+          reports: "**/*.cobertura.xml" 
+          targetdir: "coveragereport" 
+          reporttypes: Html;HtmlSummary;MarkdownSummaryGithub
+          verbosity: "Info" 
+          title: "Code Coverage" 
+          tag: "${{ github.run_number }}_${{ github.run_id }}" 
+          customSettings: "" 
+          toolpath: "reportgeneratortool" 
+
+
+      - name: Display Report
+        run: cat ./coveragereport/SummaryGithub.md >> $env:GITHUB_STEP_SUMMARY 
+        
+
+      - name: Upload Code Coverage Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: ./coveragereport
+
+    
+

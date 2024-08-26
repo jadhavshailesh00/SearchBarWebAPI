@@ -1,0 +1,12 @@
+name: Pull Request Validation
+
+on:
+  pull_request:
+    types:
+      - opened
+      - ready_for_review
+
+jobs:
+  call-workflow-passing-data:
+    uses: jadhavshailesh00/Centralize_Repo/.github/workflows/Pull_Request_Validation.yml@main
+    
